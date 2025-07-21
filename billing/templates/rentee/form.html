@@ -1,0 +1,19 @@
+{% extends "base_generic.html" %}
+{% block content %}
+  <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Rentee</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    {{ form.as_p }}
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'rentee_list' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock %}

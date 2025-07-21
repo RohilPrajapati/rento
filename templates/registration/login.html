@@ -1,0 +1,53 @@
+{% extends "base_generic.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title mb-4">Login</h2>
+
+        {% if form.errors %}
+          <div class="alert alert-danger">
+            Your username and password didn't match. Please try again.
+          </div>
+        {% endif %}
+
+        {% if next %}
+          {% if user.is_authenticated %}
+            <div class="alert alert-warning">
+              Your account doesn't have access to this page. Please login with an account that has access.
+            </div>
+          {% else %}
+            <div class="alert alert-info">
+              Please login to see this page.
+            </div>
+          {% endif %}
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label for="id_username" class="form-label">Username</label>
+            <input type="text" name="username" class="form-control" id="id_username" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_password" class="form-label">Password</label>
+            <input type="password" name="password" class="form-control" id="id_password" required>
+          </div>
+
+          <input type="hidden" name="next" value="{{ next }}">
+
+          <button type="submit" class="btn btn-primary">Login</button>
+          <a href="{% url 'password_reset' %}" class="btn btn-link">Forgot password?</a>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

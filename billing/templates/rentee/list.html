@@ -1,0 +1,42 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Rentee List</h2>
+    <a href="{% url 'rentee_create' %}" class="btn btn-success">
+      <i class="bi bi-person-plus"></i> Add Rentee
+    </a>
+  </div>
+
+  {% if rentees %}
+    <ul class="list-group shadow-sm">
+      {% for rentee in rentees %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{{ rentee.full_name }}</strong>
+            <br>
+            <small class="text-muted">
+              {{ rentee.email|default:"No email provided" }}
+            </small>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{% url 'rentee_edit' rentee.pk %}" class="btn btn-sm btn-outline-primary">
+              <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <form method="post" action="{% url 'rentee_delete' rentee.pk %}" onsubmit="return confirm('Are you sure you want to delete this rentee?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </form>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="alert alert-info text-center">
+      <i class="bi bi-info-circle-fill"></i> No rentees found. Click
+      <a href="{% url 'rentee_create' %}" class="alert-link">here</a> to add one.
+    </div>
+  {% endif %}
+{% endblock %}
