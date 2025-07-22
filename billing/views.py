@@ -3,6 +3,7 @@ from billing.models import Rentee, ElectricityBill
 from billing.forms import RenteeForm, ElectricityBillForm
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 
 # Create your views here.
 class RenteeListView(LoginRequiredMixin,View):
@@ -20,6 +21,7 @@ class RenteeCreateView(LoginRequiredMixin,View):
         form = RenteeForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Added Rentee Successfully")
             return redirect('rentee_list')
         return render(request, 'rentee/form.html', {'form': form})
 
@@ -34,6 +36,7 @@ class RenteeUpdateView(LoginRequiredMixin, View):
         form = RenteeForm(request.POST, instance=rentee)
         if form.is_valid():
             form.save()
+            messages.success(request, "Updated Rentee Successfully")
             return redirect('rentee_list')
         return render(request, 'rentee/form.html', {'form': form})
 
@@ -42,6 +45,7 @@ class RenteeDeleteView(LoginRequiredMixin, View):
         rentee = get_object_or_404(Rentee, pk=pk)
         rentee.is_deleted = True
         rentee.save()
+        messages.success(request, "Remove Rentee Successfully")
         return redirect('rentee_list')
 
 class ElectricityBillListView(LoginRequiredMixin, View):
@@ -59,6 +63,7 @@ class ElectricityBillCreateView(LoginRequiredMixin, View):
         form = ElectricityBillForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, "Added Bill Successfully")
             return redirect('bill_list')
         return render(request, 'billing/form.html', {'form': form})
 
@@ -74,5 +79,6 @@ class ElectricityBillUpdateView(LoginRequiredMixin, View):
         form = ElectricityBillForm(request.POST, instance=bill)
         if form.is_valid():
             form.save()
+            messages.success(request, "Updated Bill Successfully")
             return redirect('bill_list')
         return render(request, 'billing/form.html', {'form': form})
