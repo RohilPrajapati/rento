@@ -4,7 +4,7 @@ from billing.models import Rentee, ElectricityBill
 class RenteeForm(forms.ModelForm):
     class Meta:
         model = Rentee
-        fields = ['full_name', 'email', 'is_deleted']
+        fields = ['full_name', 'email']
 
 class ElectricityBillForm(forms.ModelForm):
     billing_month = forms.DateField(
