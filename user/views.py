@@ -1,11 +1,7 @@
 from django.views import View
 from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-
-class UserProfileView(View):
+class UserProfileView(LoginRequiredMixin,View):
     def get(self, request):
-        if request.user.is_authenticated:
-            return render(request, 'user/profile.html')
-        messages.warning(request, "Please log in to access your profile.")
-        return redirect('login')
+        return render(request, 'user/profile.html')
