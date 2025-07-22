@@ -1,4 +1,7 @@
 {% extends "base_generic.html" %}
+{% block header %}
+    {{ form.media }}
+{% endblock %}
 {% block content %}
   <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Electricity Bill</h2>
   <form method="post">

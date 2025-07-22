@@ -1,4 +1,5 @@
 {% extends "base_generic.html" %}
+{% load nepali_filters %}
 {% block content %}
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Electricity Bills</h2>
@@ -27,7 +28,7 @@
           {% for bill in bills %}
             <tr>
               <td>{{ bill.rentee.full_name }}</td>
-              <td>{{ bill.billing_month|date:"F Y" }}</td>
+              <td>{{ bill.billing_month|to_nepali_date }}</td>
               <td class="text-end">{{ bill.previous_reading }}</td>
               <td class="text-end">{{ bill.current_reading }}</td>
               <td class="text-end">{{ bill.units_consumed }}</td>

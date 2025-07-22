@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from nepali_datetime_field.models import NepaliDateField
 
 class Rentee(models.Model):
     full_name = models.CharField(max_length=150)
@@ -27,7 +28,7 @@ class ElectricityBill(models.Model):
         ('pending','Pending')
     )
     rentee = models.ForeignKey(Rentee, on_delete=models.PROTECT)
-    billing_month = models.DateField(help_text="Use the first day of the billing month")
+    billing_month = NepaliDateField()
     previous_reading = models.DecimalField(max_digits=10, decimal_places=2)
     current_reading = models.DecimalField(max_digits=10, decimal_places=2)
     units_consumed = models.DecimalField(max_digits=10, decimal_places=2, blank=True)

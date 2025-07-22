@@ -1,5 +1,6 @@
 from django import forms
 from billing.models import Rentee, ElectricityBill
+from nepali_datetime_field.forms import NepaliDateField
 
 class RenteeForm(forms.ModelForm):
     class Meta:
@@ -7,11 +8,7 @@ class RenteeForm(forms.ModelForm):
         fields = ['full_name', 'email']
 
 class ElectricityBillForm(forms.ModelForm):
-    billing_month = forms.DateField(
-        input_formats=['%Y-%m'],
-        widget=forms.TextInput(attrs={'type': 'month'}),
-        help_text="Select the billing month (use first day of month)"
-    )
+    billing_month = NepaliDateField()
 
     class Meta:
         model = ElectricityBill
