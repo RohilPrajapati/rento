@@ -37,17 +37,18 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav me-auto">
-                {#                    <li class="nav-item">#}
-                {#                        <a class="nav-link" href="/" disabled>Home</a>#}
-                {#                    </li>#}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'bill_list' %}">Billing</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'rentee_list' %}">Rentee</a>
-                </li>
-            </ul>
+            {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'bill_list' %}">Billing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rentee_list' %}">Rentee</a>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="navbar-nav me-auto"></ul>
+            {% endif %}
 
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
@@ -68,9 +69,6 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
-                    {#                        <li class="nav-item">#}
-                    {#                            <a class="nav-link" href="{% url 'signup' %}">Sign Up</a> <!-- optional if you have signup -->#}
-                    {#                        </li>#}
                 {% endif %}
             </ul>
         </div>
