@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user',
     'billing',
+    'bootstrap5',
+    'nepali_datetime_field',
 ]
 
 MIDDLEWARE = [
