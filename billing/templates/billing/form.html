@@ -16,7 +16,10 @@
     </form>
 
     <script>
+        const isEditMode = {{ form.instance.pk|yesno:"true,false" }};
         document.addEventListener('DOMContentLoaded', function () {
+            if (isEditMode) return; // Don't fetch previous reading in edit mode
+
             function fetchPreviousReading() {
                 const renteeInput = document.getElementById('id_rentee');
                 const monthInput = document.getElementById('id_billing_month');
