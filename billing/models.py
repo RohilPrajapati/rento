@@ -1,6 +1,9 @@
-from django.db import models
+import nepali_datetime
 from django.core.exceptions import ValidationError
-from nepali_datetime_field.models import NepaliDateField
+from django.db import models
+
+from elec_proj.constants import DATE_MONTH_CHOICES
+
 
 class Rentee(models.Model):
     full_name = models.CharField(max_length=150)
@@ -20,15 +23,17 @@ class Rentee(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return  f"{self.full_name} ({self.email})"
+        return f"{self.full_name} ({self.email})"
+
 
 class ElectricityBill(models.Model):
     BILL_STATUS_CHOICES = (
-        ('paid','Paid'),
-        ('pending','Pending')
+        ('paid', 'Paid'),
+        ('pending', 'Pending')
     )
     rentee = models.ForeignKey(Rentee, on_delete=models.PROTECT)
-    billing_month = NepaliDateField()
+    billing_month = models.PositiveSmallIntegerField(max_length=10, choices=DATE_MONTH_CHOICES)
+    billing_year = models.IntegerField(default=nepali_datetime.date.today().year)
     previous_reading = models.DecimalField(max_digits=10, decimal_places=2)
     current_reading = models.DecimalField(max_digits=10, decimal_places=2)
     units_consumed = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
@@ -39,7 +44,7 @@ class ElectricityBill(models.Model):
 
     class Meta:
         ordering = ['-billing_month']
-        unique_together = ['rentee', 'billing_month']
+        unique_together = ['rentee', 'billing_month', 'billing_year']
 
     def save(self, *args, **kwargs):
         self.units_consumed = self.current_reading - self.previous_reading
@@ -47,4 +52,4 @@ class ElectricityBill(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.rentee.full_name} - {self.billing_month.strftime('%B %Y')}"
+        return f"{self.rentee.full_name} - {self.get_billing_month_display()} - {self.billing_year}"
