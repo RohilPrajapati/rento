@@ -1,13 +1,70 @@
 {% extends "base_generic.html" %}
+
 {% block header %}
     {{ form.media }}
+    <!-- Load jQuery here -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
+
 {% block content %}
-  <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Electricity Bill</h2>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Save</button>
-    <a href="{% url 'bill_list' %}" class="btn btn-secondary">Cancel</a>
-  </form>
+    <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Electricity Bill</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Save</button>
+        <a href="{% url 'bill_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function fetchPreviousReading() {
+                const renteeInput = document.getElementById('id_rentee');
+                const monthInput = document.getElementById('id_billing_month');
+                const yearInput = document.getElementById('id_billing_year');
+                const previousReadingInput = document.getElementById('id_previous_reading');
+
+                const renteeId = renteeInput ? renteeInput.value : '';
+                const billingMonth = monthInput ? monthInput.value : '';
+                const billingYear = yearInput ? yearInput.value : '';
+
+                if (!renteeId || !billingMonth || !billingYear) {
+                    if (previousReadingInput) previousReadingInput.value = '';
+                    return;
+                }
+
+                const params = new URLSearchParams({
+                    'rentee_id': renteeId,
+                    'billing_month': billingMonth,
+                    'billing_year': billingYear
+                });
+
+                fetch("{% url 'get_previous_reading' %}?" + params.toString())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (previousReadingInput) {
+                            previousReadingInput.value = data.previous_reading !== null ? data.previous_reading : '';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+            }
+
+            const renteeInput = document.getElementById('id_rentee');
+            const monthInput = document.getElementById('id_billing_month');
+            const yearInput = document.getElementById('id_billing_year');
+
+            if (renteeInput) renteeInput.addEventListener('change', fetchPreviousReading);
+            if (monthInput) monthInput.addEventListener('change', fetchPreviousReading);
+            if (yearInput) yearInput.addEventListener('change', fetchPreviousReading);
+
+            // optional: fetch on page load
+            fetchPreviousReading();
+        });
+    </script>
+
+
 {% endblock %}
