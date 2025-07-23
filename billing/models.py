@@ -32,7 +32,7 @@ class ElectricityBill(models.Model):
         ('pending', 'Pending')
     )
     rentee = models.ForeignKey(Rentee, on_delete=models.PROTECT)
-    billing_month = models.PositiveSmallIntegerField(max_length=10, choices=DATE_MONTH_CHOICES)
+    billing_month = models.PositiveSmallIntegerField(choices=DATE_MONTH_CHOICES)
     billing_year = models.IntegerField(default=nepali_datetime.date.today().year)
     previous_reading = models.DecimalField(max_digits=10, decimal_places=2)
     current_reading = models.DecimalField(max_digits=10, decimal_places=2)
