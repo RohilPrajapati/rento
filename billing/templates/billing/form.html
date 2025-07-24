@@ -2,23 +2,55 @@
 
 {% block header %}
     {{ form.media }}
-    <!-- Load jQuery here -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block content %}
-    <h2>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Electricity Bill</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Save</button>
-        <a href="{% url 'bill_list' %}" class="btn btn-secondary">Cancel</a>
-    </form>
+    <div class="container mt-4" style="max-width: 700px;">
+        <h4 class="mb-4 text-center">{% if form.instance.pk %}Edit{% else %}Add{% endif %} Electricity Bill</h4>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% for field in form %}
+                <div class="row mb-2 align-items-center">
+                    <label for="{{ field.id_for_label }}" class="col-sm-4 col-form-label text-end">
+                        {{ field.label }}
+                    </label>
+                    <div class="col-sm-8">
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            <div class="row mt-4">
+                <div class="col-sm-8 offset-sm-4">
+                    <button type="submit" class="btn btn-success me-2">Save</button>
+                    {% if request.GET.next and request.GET.rentee_id %}
+                        <a href="{% url 'bill_list_user_wise' request.GET.rentee_id %}"
+                           class="btn btn-secondary">Cancel</a>
+                    {% else %}
+                        <a href="{% url 'bill_list' %}" class="btn btn-secondary">Cancel</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
 
     <script>
         const isEditMode = {{ form.instance.pk|yesno:"true,false" }};
         document.addEventListener('DOMContentLoaded', function () {
-            if (isEditMode) return; // Don't fetch previous reading in edit mode
+            if (isEditMode) return;
 
             function fetchPreviousReading() {
                 const renteeInput = document.getElementById('id_rentee');
@@ -26,9 +58,9 @@
                 const yearInput = document.getElementById('id_billing_year');
                 const previousReadingInput = document.getElementById('id_previous_reading');
 
-                const renteeId = renteeInput ? renteeInput.value : '';
-                const billingMonth = monthInput ? monthInput.value : '';
-                const billingYear = yearInput ? yearInput.value : '';
+                const renteeId = renteeInput?.value || '';
+                const billingMonth = monthInput?.value || '';
+                const billingYear = yearInput?.value || '';
 
                 if (!renteeId || !billingMonth || !billingYear) {
                     if (previousReadingInput) previousReadingInput.value = '';
@@ -64,10 +96,7 @@
             if (monthInput) monthInput.addEventListener('change', fetchPreviousReading);
             if (yearInput) yearInput.addEventListener('change', fetchPreviousReading);
 
-            // optional: fetch on page load
             fetchPreviousReading();
         });
     </script>
-
-
 {% endblock %}

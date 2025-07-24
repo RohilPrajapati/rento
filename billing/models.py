@@ -27,10 +27,7 @@ class Rentee(models.Model):
 
 
 class ElectricityBill(models.Model):
-    BILL_STATUS_CHOICES = (
-        ('paid', 'Paid'),
-        ('pending', 'Pending')
-    )
+    BILL_STATUS_CHOICES = (('paid', 'Paid'), ('pending', 'Pending'))
     rentee = models.ForeignKey(Rentee, on_delete=models.PROTECT)
     billing_month = models.PositiveSmallIntegerField(choices=DATE_MONTH_CHOICES)
     billing_year = models.IntegerField(default=nepali_datetime.date.today().year)
@@ -45,6 +42,15 @@ class ElectricityBill(models.Model):
     class Meta:
         ordering = ['-billing_month']
         unique_together = ['rentee', 'billing_month', 'billing_year']
+
+    def clean(self):
+        if self.previous_reading > self.current_reading:
+            raise ValidationError(
+                {'previous_reading': 'Previous reading must be less than or equal to current reading.',
+                    'current_reading': 'Current reading must be greater than or equal to previous reading.'})
+
+        if self.rate_per_unit < 0:
+            raise ValidationError({'rate_per_unit': 'Rate per unit cannot be negative.'})
 
     def save(self, *args, **kwargs):
         self.units_consumed = self.current_reading - self.previous_reading

@@ -23,6 +23,9 @@
                         <small class="text-muted">{{ rentee.email|default:"No email provided" }}</small>
                     </div>
                     <div class="d-flex gap-2">
+                        <a href="{% url 'bill_list_user_wise' rentee.pk %}" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-pencil-square"></i> Detail
+                        </a>
                         <a href="{% url 'rentee_edit' rentee.pk %}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil-square"></i> Edit
                         </a>

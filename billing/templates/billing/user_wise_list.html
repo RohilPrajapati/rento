@@ -1,0 +1,61 @@
+{% extends "base_generic.html" %}
+{% block content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Electricity Bills of <i>{{ rentee.full_name }}</i></h2>
+        <a href="{% url 'bill_create' %}?rentee_id={{ rentee.id }}&next={{ request.get_full_path|urlencode }}"
+           class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Add Bill
+        </a>
+    </div>
+
+    {% if bills %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered align-middle">
+                <thead class="table-dark">
+                <tr>
+                    <th>Rentee</th>
+                    <th>Month</th>
+                    <th>Year</th>
+                    <th class="text-end">Previous Reading</th>
+                    <th class="text-end">Current Reading</th>
+                    <th class="text-end">Units</th>
+                    <th class="text-end">Rate (₹)</th>
+                    <th class="text-end">Total (₹)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for bill in bills %}
+                    <tr>
+                        <td>{{ bill.rentee.full_name }}</td>
+                        <td>{{ bill.get_billing_month_display }}</td>
+                        <td>{{ bill.billing_year }}</td>
+                        <td class="text-end">{{ bill.previous_reading }}</td>
+                        <td class="text-end">{{ bill.current_reading }}</td>
+                        <td class="text-end">{{ bill.units_consumed }}</td>
+                        <td class="text-end">{{ bill.rate_per_unit }}</td>
+                        <td class="text-end">{{ bill.total_amount }}</td>
+                        <td>
+                            {% if bill.bill_status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif bill.bill_status == 'unpaid' %}
+                                <span class="badge bg-danger">Unpaid</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ bill.get_bill_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'bill_edit' bill.pk %}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil-square"></i> Edit
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">No bills recorded yet.</div>
+    {% endif %}
+{% endblock %}

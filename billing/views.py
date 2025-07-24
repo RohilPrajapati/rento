@@ -77,6 +77,14 @@ class ElectricityBillListView(LoginRequiredMixin, View):
         return render(request, 'billing/list.html', {'bills': bills})
 
 
+class ElectricityBillUserWiseListView(LoginRequiredMixin, View):
+    def get(self, request, rentee_id):
+        rentee = Rentee.objects.get(pk=rentee_id)
+        bills = ElectricityBill.objects.filter(rentee_id=rentee_id).select_related('rentee')
+
+        return render(request, 'billing/user_wise_list.html', {'bills': bills, 'rentee': rentee})
+
+
 @login_required
 @require_GET
 def get_previous_reading(request):
@@ -108,7 +116,12 @@ def get_previous_reading(request):
 
 class ElectricityBillCreateView(LoginRequiredMixin, View):
     def get(self, request):
-        form = ElectricityBillForm()
+        rentee_id = request.GET.get('rentee_id')
+        initial_data = {}
+
+        if rentee_id:
+            initial_data['rentee'] = get_object_or_404(Rentee, pk=rentee_id)
+        form = ElectricityBillForm(initial=initial_data)
         return render(request, 'billing/form.html', {'form': form})
 
     def post(self, request):
@@ -116,6 +129,9 @@ class ElectricityBillCreateView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Added Bill Successfully")
+            next_url = request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('bill_list')
         return render(request, 'billing/form.html', {'form': form})
 

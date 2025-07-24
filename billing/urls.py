@@ -2,8 +2,9 @@ from django.urls import path
 
 from billing import views
 
-urlpatterns = [path('', views.ElectricityBillListView.as_view(), name='bill_list'),
-
+urlpatterns = [
+    path('', views.ElectricityBillListView.as_view(), name='bill_list'),
+    path('rentee/<int:rentee_id>', views.ElectricityBillUserWiseListView.as_view(), name='bill_list_user_wise'),
     path('create/', views.ElectricityBillCreateView.as_view(), name='bill_create'),
     path('<int:pk>/edit/', views.ElectricityBillUpdateView.as_view(), name='bill_edit'),
 
