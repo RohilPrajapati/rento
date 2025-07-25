@@ -7,6 +7,7 @@ urlpatterns = [
     path('rentee/<int:rentee_id>', views.ElectricityBillUserWiseListView.as_view(), name='bill_list_user_wise'),
     path('create/', views.ElectricityBillCreateView.as_view(), name='bill_create'),
     path('<int:pk>/edit/', views.ElectricityBillUpdateView.as_view(), name='bill_edit'),
+    path('bill/<int:pk>/delete/', views.ElectricityBillDeleteView.as_view(), name='bill_delete'),
 
     path('rentee/', views.RenteeListView.as_view(), name='rentee_list'),
     path('rentee/create/', views.RenteeCreateView.as_view(), name='rentee_create'),

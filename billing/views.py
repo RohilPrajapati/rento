@@ -10,6 +10,8 @@ from billing.forms import RenteeForm, ElectricityBillForm
 from billing.models import Rentee, ElectricityBill
 from billing.utils import get_previous_month_and_year
 from elec_proj.mixins import PaginationMixin
+import nepali_datetime
+from elec_proj.constants import DATE_MONTH_CHOICES
 
 
 # Create your views here.
@@ -71,18 +73,68 @@ class RenteeDeleteView(LoginRequiredMixin, View):
         return redirect('rentee_list')
 
 
-class ElectricityBillListView(LoginRequiredMixin, View):
-    def get(self, request):
-        bills = ElectricityBill.objects.select_related('rentee')
-        return render(request, 'billing/list.html', {'bills': bills})
+class BaseElectricityBillListView(LoginRequiredMixin, PaginationMixin, View):
+    rentee_filter = None  # To be overridden in child class if needed
 
+    def get_filter_params(self, request):
+        query = request.GET.get('q', '').strip()
+        query_month = request.GET.get('q_month')
+        query_year = request.GET.get('q_year')
 
-class ElectricityBillUserWiseListView(LoginRequiredMixin, View):
-    def get(self, request, rentee_id):
-        rentee = Rentee.objects.get(pk=rentee_id)
-        bills = ElectricityBill.objects.filter(rentee_id=rentee_id).select_related('rentee')
+        filter_params = {}
 
-        return render(request, 'billing/user_wise_list.html', {'bills': bills, 'rentee': rentee})
+        if query:
+            filter_params['rentee__full_name__icontains'] = query
+        if query_month:
+            filter_params['billing_month'] = query_month
+        if query_year:
+            filter_params['billing_year'] = query_year
+
+        return filter_params, query, query_month, query_year
+
+    def get_queryset(self, filter_params):
+        qs = ElectricityBill.objects.select_related('rentee')
+        if self.rentee_filter:
+            qs = qs.filter(rentee=self.rentee_filter)
+        return qs.filter(**filter_params)
+
+    def get_context_data(self, request, page_obj, query, q_month, q_year, **kwargs):
+        context = {
+            'bills': page_obj,
+            'search_query': query,
+            'q_month': str(q_month) if q_month is not None else '',
+            'q_year': str(q_year) if q_year is not None else '',
+            'DATE_MONTH_CHOICES': DATE_MONTH_CHOICES,
+        }
+        context.update(kwargs)
+        return context
+
+    def get(self, request, *args, **kwargs):
+        filter_params, query, q_month, q_year = self.get_filter_params(request)
+        queryset = self.get_queryset(filter_params)
+        page_obj = self.paginate_queryset(queryset, request)
+        context = self.get_context_data(
+            request, page_obj, query, q_month, q_year, **kwargs
+        )
+        return render(request, self.template_name, context)
+
+class ElectricityBillListView(BaseElectricityBillListView):
+    template_name = 'billing/list.html'
+
+class ElectricityBillUserWiseListView(BaseElectricityBillListView):
+    template_name = 'billing/user_wise_list.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.rentee = get_object_or_404(Rentee, pk=kwargs['rentee_id'])
+        self.rentee_filter = self.rentee
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, request, page_obj, query, q_month, q_year, **kwargs):
+        context = super().get_context_data(
+            request, page_obj, query, q_month, q_year, **kwargs
+        )
+        context['rentee'] = self.rentee
+        return context
 
 
 @login_required
@@ -148,5 +200,42 @@ class ElectricityBillUpdateView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Updated Bill Successfully")
+            next_url = request.POST.get('next')
+            if next_url:
+                return redirect(next_url)
             return redirect('bill_list')
         return render(request, 'billing/form.html', {'form': form})
+
+class ElectricityBillDeleteView(View):
+    def post(self, request, pk, *args, **kwargs):
+        bill = get_object_or_404(ElectricityBill, pk=pk)
+        bill.delete()
+        messages.success(request, "Bill deleted successfully.")
+        next_url = request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+        return redirect('bill_list')
+
+
+class HomePageView(View):
+    def get(self, request):
+        today = nepali_datetime.date.today()
+        current_month = today.month
+        current_year = today.year
+
+        total_rentees = Rentee.objects.filter(is_deleted=False).count()
+
+        monthly_bill_count = ElectricityBill.objects.filter(
+            billing_month=int(current_month),
+            billing_year=int(current_year)
+        ).count()
+
+        pending_bill_count = ElectricityBill.objects.filter(
+            bill_status='pending'
+        ).count()
+        summary = {
+            'total_rentees': total_rentees,
+            'monthly_bill_count': monthly_bill_count,
+            'pending_bill_count': pending_bill_count,
+        }
+        return render(request, 'home.html', context=summary)
