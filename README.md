@@ -28,9 +28,8 @@ This app helps a single household track their electricity usage and payments for
 
 ## TODO
 
-- [ ] Add pagination to billing tables to improve navigation on large datasets.
-- [ ] Enhance the billing create form to show the last month paid by a rentee, helping users avoid duplicate entries.
 - [ ] Develop reports/dashboard summarizing billing data for better insights.
+- [ ] if posible create resuable component for pagination and tables
 
 ---
 
