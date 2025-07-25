@@ -7,54 +7,68 @@
         </a>
     </div>
 
-    {% if bills %}
-        <div class="table-responsive">
-            <table class="table table-striped table-hover table-bordered align-middle">
-                <thead class="table-dark">
-                <tr>
-                    <th>Rentee</th>
-                    <th>Month</th>
-                    <th>Year</th>
-                    <th class="text-end">Previous Reading</th>
-                    <th class="text-end">Current Reading</th>
-                    <th class="text-end">Units</th>
-                    <th class="text-end">Rate (₹)</th>
-                    <th class="text-end">Total (₹)</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for bill in bills %}
-                    <tr>
-                        <td>{{ bill.rentee.full_name }}</td>
-                        <td>{{ bill.get_billing_month_display }}</td>
-                        <td>{{ bill.billing_year }}</td>
-                        <td class="text-end">{{ bill.previous_reading }}</td>
-                        <td class="text-end">{{ bill.current_reading }}</td>
-                        <td class="text-end">{{ bill.units_consumed }}</td>
-                        <td class="text-end">{{ bill.rate_per_unit }}</td>
-                        <td class="text-end">{{ bill.total_amount }}</td>
-                        <td>
-                            {% if bill.bill_status == 'paid' %}
-                                <span class="badge bg-success">Paid</span>
-                            {% elif bill.bill_status == 'unpaid' %}
-                                <span class="badge bg-danger">Unpaid</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ bill.get_bill_status_display }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{% url 'bill_edit' bill.pk %}" class="btn btn-sm btn-outline-warning">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </a>
-                        </td>
-                    </tr>
+    <form method="get" class="mb-3 d-flex align-items-center">
+        <input type="text" name="q" class="form-control me-2" placeholder="Search rentees..."
+               value="{{ search_query }}">
+
+        <select name="q_month" class="form-select me-2" aria-label="Select month" onchange="updateMonthName(this)">
+            <option value="">Select the Month</option>
+            {% for num, name in DATE_MONTH_CHOICES %}
+                <option value="{{ num }}"
+                        {% if q_month|stringformat:"s" == num|stringformat:"s" %}selected{% endif %}>
+                    {{ name }}
+                </option>
+            {% endfor %}
+        </select>
+
+
+        <input type="number" name="q_year" class="form-control me-2" placeholder="Year" min="2000" max="2099"
+               value="{{ q_year }}">
+
+        <button type="submit" class="btn btn-outline-primary me-2">Search</button>
+
+        <a href="{% url 'bill_list' %}" class="btn btn-outline-secondary">Clear</a>
+    </form>
+    {% include "components/bills_table.html" with bills=bills %}
+    {# TODO Break down this things into components #}
+    {% if bills.paginator.num_pages > 1 %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if bills.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link text-dark"
+                           href="?q={{ search_query }}&page={{ bills.previous_page_number }}&q_month={{ q_month }}&q_year={{ q_year }}">Previous</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+
+                {% for num in bills.paginator.page_range %}
+                    {% if num == bills.number %}
+                        <li class="page-item active">
+                            <span class="page-link bg-dark border-dark text-white">{{ num }}</span>
+                        </li>
+                    {% elif num > bills.number|add:'-3' and num < bills.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link text-dark"
+                               href="?q={{ search_query }}&page={{ num }}&q_month={{ q_month }}&q_year={{ q_year }}">{{ num }}</a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <div class="alert alert-info">No bills recorded yet.</div>
+
+                {% if bills.has_next %}
+                    <li class="page-item">
+                        <a class="page-link text-dark"
+                           href="?q={{ search_query }}&page={{ bills.next_page_number }}&q_month={{ q_month }}&q_year={{ q_year }}">Next</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
     {% endif %}
 {% endblock %}
