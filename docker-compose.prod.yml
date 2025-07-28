@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: gunicorn elec_proj.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - sqlite_data:/code/db_data
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=0
+      - ALLOWED_HOSTS=${ALLOW_HOST}
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+
+volumes:
+  sqlite_data:
